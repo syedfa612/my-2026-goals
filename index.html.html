@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 2026 Goals</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root {
+  --bg:#0d0d0d;--surface:#161616;--surface2:#1e1e1e;--surface3:#272727;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
+  --text:#edeae4;--text2:#8f8c87;--text3:#525050;
+  --career:#5b9cf6;--finance:#4eca9a;--health:#f07850;
+  --yellow:#f5c842;--danger:#e05555;--gps:#a78bfa;
+  --radius:12px;--radius-sm:8px;--sw:220px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;font-size:15px;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;padding:24px 0 16px;}
+.logo{padding:0 18px 20px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+.logo-year{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px;}
+.logo-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.02em;}
+.nav-label{padding:6px 18px 3px;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;margin:1px 8px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:13.5px;font-weight:400;transition:all .12s;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--surface3);color:var(--text);font-weight:500;}
+.nav-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.nav-icon{font-size:14px;width:16px;text-align:center;flex-shrink:0;}
+.nav-pct{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+.sidebar-bottom{margin-top:auto;padding:14px 18px 0;border-top:1px solid var(--border);}
+.streak-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.streak-num{font-size:13px;font-weight:600;color:var(--text);}
+.streak-label{font-size:11px;color:var(--text3);}
+.overall-bar-outer{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-bottom:5px;}
+.overall-bar-inner{height:100%;background:var(--text3);border-radius:99px;transition:width .5s ease;}
+.overall-label{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+
+/* MAIN */
+.main{margin-left:var(--sw);flex:1;height:100vh;overflow-y:auto;overflow-x:hidden;}
+.panel{display:none;padding:36px 44px 80px;max-width:860px;}
+.panel.active{display:block;}
+
+/* GPS PANEL */
+.gps-panel{display:none;padding:0;height:100vh;flex-direction:column;}
+.gps-panel.active{display:flex;}
+.gps-top{padding:24px 32px 0;flex-shrink:0;}
+.gps-eyebrow{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:6px;}
+.gps-title{font-size:24px;font-weight:600;letter-spacing:-.03em;color:var(--text);margin-bottom:16px;}
+
+/* LIVE STATS BAR */
+.gps-stats-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:0 32px;margin-bottom:12px;flex-shrink:0;}
+.gps-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;text-align:center;}
+.gps-stat.highlight{border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.06);}
+.gstat-label{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.gstat-value{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.02em;font-family:'DM Mono',monospace;}
+.gstat-unit{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* CONTROLS */
+.gps-controls{display:flex;gap:10px;padding:0 32px;margin-bottom:12px;flex-shrink:0;align-items:center;}
+.gps-btn{padding:10px 22px;border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border2);}
+.gps-btn.start{background:var(--gps);color:#0d0d0d;border-color:var(--gps);}
+.gps-btn.start:hover{opacity:.9;}
+.gps-btn.pause{background:var(--surface2);color:var(--text);}
+.gps-btn.pause:hover{background:var(--surface3);}
+.gps-btn.stop{background:transparent;color:var(--danger);border-color:rgba(224,85,85,.3);}
+.gps-btn.stop:hover{background:rgba(224,85,85,.08);}
+.activity-select{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 12px;outline:none;cursor:pointer;}
+.activity-select option{background:var(--surface2);}
+.gps-status{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text3);margin-left:auto;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);}
+.status-dot.active{background:#4eca9a;animation:blink 1.2s infinite;}
+.status-dot.paused{background:var(--yellow);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* MAP */
+.map-wrap{flex:1;position:relative;margin:0 32px 12px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);min-height:0;}
+#gps-map{width:100%;height:100%;}
+.map-overlay{position:absolute;top:12px;right:12px;z-index:1000;display:flex;flex-direction:column;gap:6px;}
+.map-btn{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 11px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .12s;white-space:nowrap;}
+.map-btn:hover{background:var(--surface2);color:var(--text);}
+
+/* HISTORY TABS */
+.gps-tabs{display:flex;gap:6px;padding:0 32px;margin-bottom:12px;flex-shrink:0;}
+.gps-tab{padding:6px 14px;border-radius:99px;font-size:12px;cursor:pointer;border:1px solid var(--border);color:var(--text3);transition:all .12s;}
+.gps-tab.on{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+
+/* HISTORY PANEL */
+.gps-history{padding:0 32px 24px;overflow-y:auto;}
+.history-empty{font-size:13px;color:var(--text3);font-style:italic;padding:20px 0;}
+.session-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:border-color .12s;}
+.session-card:hover{border-color:var(--border2);}
+.sc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.sc-activity{font-size:13px;font-weight:500;color:var(--text);}
+.sc-date{margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);}
+.sc-stats{display:flex;gap:20px;}
+.sc-stat{font-size:12px;color:var(--text3);}
+.sc-stat strong{color:var(--text2);font-weight:500;}
+.sc-badge{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500;}
+
+/* DASHBOARD */
+.dash-greeting{margin-bottom:28px;}
+.dash-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:8px;letter-spacing:.06em;}
+.dash-hello{font-size:26px;font-weight:600;letter-spacing:-.03em;color:var(--text);line-height:1.1;margin-bottom:5px;}
+.dash-sub{font-size:13px;color:var(--text2);}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+.kpi-label{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;}
+.kpi-value{font-size:24px;font-weight:600;letter-spacing:-.03em;color:var(--text);}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.goal-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.goal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:border-color .15s;}
+.goal-card:hover{border-color:var(--border2);}
+.gc-top{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.gc-dot{width:7px;height:7px;border-radius:50%;}
+.gc-name{font-size:13px;font-weight:500;color:var(--text);}
+.gc-pct{margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);}
+.gc-bar-outer{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-bottom:7px;}
+.gc-bar-inner{height:100%;border-radius:99px;transition:width .5s;}
+.gc-stat{font-size:12px;color:var(--text3);}
+.quote-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;position:relative;}
+.quote-text{font-size:14px;color:var(--text2);line-height:1.6;font-style:italic;margin-bottom:6px;}
+.quote-author{font-size:11px;color:var(--text3);}
+.quote-refresh{position:absolute;top:14px;right:14px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;border-radius:6px;transition:color .15s;}
+.quote-refresh:hover{color:var(--text);}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:10px;}
+.focus-task-item{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:5px;cursor:pointer;transition:border-color .12s;}
+.focus-task-item:hover{border-color:var(--border2);}
+.fti-text{font-size:13px;color:var(--text);flex:1;}
+.fti-goal{font-size:11px;font-family:'DM Mono',monospace;}
+.habit-grid{display:flex;flex-direction:column;gap:7px;}
+.habit-row{display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);}
+.habit-name{font-size:13px;color:var(--text);flex:1;}
+.habit-days{display:flex;gap:4px;}
+.habit-day{width:26px;height:26px;border-radius:5px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;transition:all .12s;font-weight:500;}
+.habit-day.done{background:var(--day-color,var(--finance));border-color:transparent;color:#0d0d0d;}
+.habit-day:hover:not(.done){background:var(--surface2);}
+
+/* GOAL PANELS */
+.panel-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.09em;color:var(--text3);margin-bottom:7px;text-transform:uppercase;}
+.panel-title{font-size:26px;font-weight:600;letter-spacing:-.03em;color:var(--text);margin-bottom:12px;line-height:1.1;}
+.panel-title span{opacity:.35;}
+.countdown-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 12px;font-size:12px;color:var(--text2);margin-bottom:18px;font-family:'DM Mono',monospace;}
+.cc-dot{width:6px;height:6px;border-radius:50%;animation:blink 2s infinite;}
+.prog-row{display:flex;align-items:center;gap:12px;margin-bottom:9px;}
+.prog-bar-outer{flex:1;height:4px;background:var(--surface3);border-radius:99px;overflow:hidden;}
+.prog-bar-inner{height:100%;border-radius:99px;transition:width .5s ease;}
+.prog-pct{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);min-width:36px;text-align:right;}
+.hero-stats{display:flex;gap:18px;margin-bottom:22px;}
+.hs{font-size:12px;color:var(--text3);}
+.hs strong{color:var(--text2);font-weight:500;}
+.milestones-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px;}
+.ms-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;transition:all .3s;}
+.ms-card.reached{border-color:var(--ms-border);background:var(--ms-bg);}
+.ms-period{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.ms-value{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.ms-card.reached .ms-value{color:var(--ms-text);}
+.ms-sub{font-size:11px;color:var(--text3);}
+.group{margin-bottom:24px;}
+.group-header{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.group-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);}
+.group-line{flex:1;height:1px;background:var(--border);}
+.group-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+.tasks{display:flex;flex-direction:column;gap:5px;}
+.task{display:flex;align-items:flex-start;gap:11px;padding:10px 13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:background .1s,border-color .1s;position:relative;}
+.task:hover{background:var(--surface2);border-color:var(--border2);}
+.task.done{opacity:.4;}
+.task.done .task-text{text-decoration:line-through;}
+.task.starred-task{border-color:rgba(245,200,66,.25);background:rgba(245,200,66,.03);}
+.cb{width:16px;height:16px;border:1.5px solid var(--border2);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .15s;}
+.task.done .cb{background:var(--task-color,#fff);border-color:var(--task-color,#fff);}
+.ck{opacity:0;font-size:10px;color:#0d0d0d;font-weight:700;transition:opacity .15s;}
+.task.done .ck{opacity:1;}
+.task-body{flex:1;}
+.task-text{font-size:13px;color:var(--text);line-height:1.45;margin-bottom:2px;}
+.task-tag{font-size:11px;color:var(--text3);}
+.task-star{position:absolute;top:9px;right:9px;background:transparent;border:none;cursor:pointer;font-size:12px;opacity:0;transition:opacity .15s;padding:2px;}
+.task:hover .task-star,.task.starred-task .task-star{opacity:1;}
+.notes-section{margin-top:24px;margin-bottom:14px;}
+.notes-textarea{width:100%;min-height:90px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 15px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;resize:vertical;outline:none;transition:border-color .15s;}
+.notes-textarea::placeholder{color:var(--text3);}
+.notes-textarea:focus{border-color:var(--border2);}
+.notes-save-row{display:flex;justify-content:flex-end;margin-top:6px;}
+.save-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .12s;}
+.save-btn:hover{background:var(--surface3);color:var(--text);}
+
+/* POMODORO */
+.pomo-panel{display:none;padding:36px 44px 80px;max-width:560px;}
+.pomo-panel.active{display:block;}
+.pomo-clock{text-align:center;margin:24px 0 32px;}
+.pomo-mode{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;}
+.pomo-ring{width:190px;height:190px;margin:0 auto 24px;position:relative;}
+.pomo-ring svg{transform:rotate(-90deg);}
+.pomo-ring-bg{fill:none;stroke:var(--surface3);stroke-width:6;}
+.pomo-ring-fill{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .3s;}
+.pomo-time-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.pomo-time{font-family:'DM Mono',monospace;font-size:64px;font-weight:500;color:var(--text);letter-spacing:-.04em;line-height:1;transition:color .3s;}
+.pomo-time.break-mode{color:var(--finance);}
+.pomo-session{font-size:12px;color:var(--text3);}
+.pomo-btns{display:flex;gap:10px;justify-content:center;margin-bottom:28px;}
+.pomo-btn{padding:9px 22px;border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all .12s;border:1px solid var(--border2);}
+.pomo-btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);}
+.pomo-btn.secondary{background:transparent;color:var(--text2);}
+.pomo-btn.secondary:hover{background:var(--surface2);color:var(--text);}
+.pomo-settings{display:flex;gap:12px;justify-content:center;margin-bottom:28px;}
+.pomo-set-item{text-align:center;}
+.pomo-set-label{font-size:11px;color:var(--text3);margin-bottom:6px;}
+.pomo-set-input{width:60px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:16px;font-weight:500;text-align:center;padding:7px;outline:none;}
+.pomo-log{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+.pomo-log-title{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.pomo-log-list{display:flex;flex-direction:column;gap:5px;max-height:130px;overflow-y:auto;}
+.pomo-log-item{font-size:12px;color:var(--text3);display:flex;gap:8px;}
+.pomo-log-item .pl-time{font-family:'DM Mono',monospace;flex-shrink:0;}
+.pomo-log-empty{font-size:12px;color:var(--text3);font-style:italic;}
+
+/* MISC */
+.danger-btn{margin-top:28px;padding:7px 15px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text3);background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;}
+.danger-btn:hover{border-color:var(--danger);color:var(--danger);}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 15px;font-size:13px;color:var(--text2);opacity:0;transform:translateY(6px);transition:all .22s;pointer-events:none;z-index:9999;}
+.toast.show{opacity:1;transform:translateY(0);}
+.confetti-wrap{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9998;overflow:hidden;}
+.confetto{position:absolute;top:-10px;animation:fall linear forwards;}
+@keyframes fall{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:99px;}
+
+/* Leaflet dark overrides */
+.leaflet-tile{filter:brightness(.7) invert(1) contrast(3) hue-rotate(200deg) saturate(.3) brightness(.7);}
+.leaflet-container{background:#0d0d0d;}
+.leaflet-control-zoom a{background:var(--surface2)!important;color:var(--text2)!important;border-color:var(--border2)!important;}
+.leaflet-control-zoom a:hover{background:var(--surface3)!important;color:var(--text)!important;}
+.leaflet-popup-content-wrapper{background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:var(--radius-sm);}
+.leaflet-popup-tip{background:var(--surface2);}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-year">2026 goals</div>
+    <div class="logo-title">My tracker</div>
+  </div>
+  <div class="nav-label">Overview</div>
+  <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">⊞</span>Dashboard</div>
+  <div class="nav-item" onclick="nav('gps')"><span class="nav-icon" style="color:var(--gps)">◉</span>GPS tracker</div>
+  <div class="nav-item" onclick="nav('pomodoro')"><span class="nav-icon">◎</span>Focus timer</div>
+  <div class="nav-label" style="margin-top:6px;">Goals</div>
+  <div class="nav-item" onclick="nav('career')"><div class="nav-dot" style="background:#5b9cf6"></div>Career<span class="nav-pct" id="np-career">0%</span></div>
+  <div class="nav-item" onclick="nav('finance')"><div class="nav-dot" style="background:#4eca9a"></div>Finance<span class="nav-pct" id="np-finance">0%</span></div>
+  <div class="nav-item" onclick="nav('health')"><div class="nav-dot" style="background:#f07850"></div>Health<span class="nav-pct" id="np-health">0%</span></div>
+  <div class="sidebar-bottom">
+    <div class="streak-row">
+      <span style="font-size:16px">🔥</span>
+      <div><div class="streak-num"><span id="streak-count">0</span> day streak</div><div class="streak-label">Keep it going!</div></div>
+    </div>
+    <div class="overall-bar-outer"><div class="overall-bar-inner" id="overall-fill" style="width:0%"></div></div>
+    <div class="overall-label" id="overall-label">0 / 39 tasks</div>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ══ DASHBOARD ══ -->
+<div class="panel active" id="panel-dashboard">
+  <div class="dash-greeting">
+    <div class="dash-date" id="dash-date"></div>
+    <div class="dash-hello" id="dash-hello">Good morning 👋</div>
+    <div class="dash-sub" id="dash-sub">Here's where you stand today.</div>
+  </div>
+  <div class="dash-grid">
+    <div class="kpi"><div class="kpi-label">Days to deadline</div><div class="kpi-value" id="kpi-days">—</div><div class="kpi-sub">until Dec 31, 2026</div></div>
+    <div class="kpi"><div class="kpi-label">Tasks done</div><div class="kpi-value" id="kpi-done">0</div><div class="kpi-sub">out of 39 total</div></div>
+    <div class="kpi"><div class="kpi-label">KM tracked</div><div class="kpi-value" id="kpi-km">0</div><div class="kpi-sub">total distance</div></div>
+    <div class="kpi"><div class="kpi-label">Workouts</div><div class="kpi-value" id="kpi-workouts">0</div><div class="kpi-sub">GPS sessions</div></div>
+  </div>
+  <div class="goal-cards">
+    <div class="goal-card" onclick="nav('career')"><div class="gc-top"><div class="gc-dot" style="background:#5b9cf6"></div><div class="gc-name">Career</div><div class="gc-pct" id="dash-pct-career">0%</div></div><div class="gc-bar-outer"><div class="gc-bar-inner" id="dash-bar-career" style="width:0%;background:#5b9cf6"></div></div><div class="gc-stat" id="dash-stat-career">0 of 17 done</div></div>
+    <div class="goal-card" onclick="nav('finance')"><div class="gc-top"><div class="gc-dot" style="background:#4eca9a"></div><div class="gc-name">Finance</div><div class="gc-pct" id="dash-pct-finance">0%</div></div><div class="gc-bar-outer"><div class="gc-bar-inner" id="dash-bar-finance" style="width:0%;background:#4eca9a"></div></div><div class="gc-stat" id="dash-stat-finance">0 of 11 done</div></div>
+    <div class="goal-card" onclick="nav('health')"><div class="gc-top"><div class="gc-dot" style="background:#f07850"></div><div class="gc-name">Health</div><div class="gc-pct" id="dash-pct-health">0%</div></div><div class="gc-bar-outer"><div class="gc-bar-inner" id="dash-bar-health" style="width:0%;background:#f07850"></div></div><div class="gc-stat" id="dash-stat-health">0 of 11 done</div></div>
+  </div>
+  <div class="quote-box">
+    <div class="quote-text" id="quote-text"></div>
+    <div class="quote-author" id="quote-author"></div>
+    <button class="quote-refresh" onclick="nextQuote()">↻</button>
+  </div>
+  <div style="margin-bottom:18px;">
+    <div class="section-title">⭐ Today's focus</div>
+    <div id="focus-list-dash"><div style="font-size:13px;color:var(--text3);padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);">Star any task (✦) to pin it here.</div></div>
+  </div>
+  <div>
+    <div class="section-title">📅 Weekly habits</div>
+    <div class="habit-grid" id="habit-grid"></div>
+  </div>
+</div>
+
+<!-- ══ GPS TRACKER ══ -->
+<div class="gps-panel" id="panel-gps">
+  <div class="gps-top">
+    <div class="gps-eyebrow">Activity tracking</div>
+    <div class="gps-title">GPS tracker</div>
+  </div>
+
+  <div class="gps-stats-bar">
+    <div class="gps-stat highlight"><div class="gstat-label">Distance</div><div class="gstat-value" id="g-dist">0.00</div><div class="gstat-unit">km</div></div>
+    <div class="gps-stat"><div class="gstat-label">Duration</div><div class="gstat-value" id="g-time">00:00</div><div class="gstat-unit">hh:mm</div></div>
+    <div class="gps-stat"><div class="gstat-label">Pace</div><div class="gstat-value" id="g-pace">—</div><div class="gstat-unit">min/km</div></div>
+    <div class="gps-stat"><div class="gstat-label">Speed</div><div class="gstat-value" id="g-speed">0.0</div><div class="gstat-unit">km/h</div></div>
+    <div class="gps-stat"><div class="gstat-label">Calories</div><div class="gstat-value" id="g-cal">0</div><div class="gstat-unit">kcal est.</div></div>
+  </div>
+
+  <div class="gps-controls">
+    <select class="activity-select" id="activity-type">
+      <option value="walk">🚶 Walking</option>
+      <option value="run">🏃 Running</option>
+      <option value="cycle">🚴 Cycling</option>
+      <option value="hike">🥾 Hiking</option>
+    </select>
+    <button class="gps-btn start" id="gps-start-btn" onclick="gpsStart()">Start</button>
+    <button class="gps-btn pause" id="gps-pause-btn" onclick="gpsPause()" style="display:none">Pause</button>
+    <button class="gps-btn stop" id="gps-stop-btn" onclick="gpsStop()" style="display:none">Save & stop</button>
+    <div class="gps-status"><div class="status-dot" id="status-dot"></div><span id="status-text">Ready</span></div>
+  </div>
+
+  <div class="map-wrap" id="map-wrap">
+    <div id="gps-map"></div>
+    <div class="map-overlay">
+      <button class="map-btn" onclick="centerMap()">⊙ My location</button>
+      <button class="map-btn" onclick="toggleMapStyle()">◑ Map style</button>
+    </div>
+  </div>
+
+  <div class="gps-tabs" style="flex-shrink:0">
+    <div class="gps-tab on" onclick="gpsTabSwitch('history',this)">Session history</div>
+    <div class="gps-tab" onclick="gpsTabSwitch('stats',this)">Totals</div>
+  </div>
+
+  <div class="gps-history" id="gps-tab-history">
+    <div id="sessions-list"></div>
+  </div>
+  <div class="gps-history" id="gps-tab-stats" style="display:none">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding-bottom:20px;">
+      <div class="gps-stat"><div class="gstat-label">Total distance</div><div class="gstat-value" id="tot-dist">0.00</div><div class="gstat-unit">km</div></div>
+      <div class="gps-stat"><div class="gstat-label">Total time</div><div class="gstat-value" id="tot-time">0h 0m</div><div class="gstat-unit">active</div></div>
+      <div class="gps-stat"><div class="gstat-label">Sessions</div><div class="gstat-value" id="tot-sessions">0</div><div class="gstat-unit">completed</div></div>
+      <div class="gps-stat"><div class="gstat-label">Avg distance</div><div class="gstat-value" id="avg-dist">0.00</div><div class="gstat-unit">km per session</div></div>
+      <div class="gps-stat"><div class="gstat-label">Best distance</div><div class="gstat-value" id="best-dist">0.00</div><div class="gstat-unit">km single session</div></div>
+      <div class="gps-stat"><div class="gstat-label">Total calories</div><div class="gstat-value" id="tot-cal">0</div><div class="gstat-unit">kcal burned</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ POMODORO ══ -->
+<div class="pomo-panel" id="panel-pomodoro">
+  <div class="panel-eyebrow">Focus mode</div>
+  <div class="panel-title" style="font-size:26px;">Pomodoro <span>timer</span></div>
+  <div class="pomo-clock">
+    <div class="pomo-mode" id="pomo-mode-label">WORK SESSION</div>
+    <div class="pomo-ring">
+      <svg width="190" height="190" viewBox="0 0 190 190">
+        <circle class="pomo-ring-bg" cx="95" cy="95" r="84"/>
+        <circle class="pomo-ring-fill" id="pomo-ring-fill" cx="95" cy="95" r="84" stroke="#5b9cf6" stroke-dasharray="528" stroke-dashoffset="0"/>
+      </svg>
+      <div class="pomo-time-center">
+        <div class="pomo-time" id="pomo-display">25:00</div>
+        <div class="pomo-session">Session <span id="pomo-session-num">1</span></div>
+      </div>
+    </div>
+    <div class="pomo-btns">
+      <button class="pomo-btn secondary" onclick="pomoReset()">Reset</button>
+      <button class="pomo-btn primary" id="pomo-start-btn" onclick="pomoToggle()">Start</button>
+      <button class="pomo-btn secondary" onclick="pomoSkip()">Skip</button>
+    </div>
+    <div class="pomo-settings">
+      <div class="pomo-set-item"><div class="pomo-set-label">Work (min)</div><input class="pomo-set-input" id="pomo-work-input" type="number" value="25" min="1" max="60" onchange="pomoReset()"></div>
+      <div class="pomo-set-item"><div class="pomo-set-label">Break (min)</div><input class="pomo-set-input" id="pomo-break-input" type="number" value="5" min="1" max="30" onchange="pomoReset()"></div>
+    </div>
+  </div>
+  <div class="pomo-log">
+    <div class="pomo-log-title">Today's sessions</div>
+    <div class="pomo-log-list" id="pomo-log-list"><div class="pomo-log-empty">No sessions yet.</div></div>
+  </div>
+</div>
+
+<!-- CAREER PANEL -->
+<div class="panel" id="panel-career">
+  <div class="panel-eyebrow">Goal 01 — Career & Skills</div>
+  <div class="panel-title">Land a paid<br>Java backend <span>internship</span></div>
+  <div class="countdown-chip"><span class="cc-dot" style="background:#5b9cf6"></span><span id="cd-career"></span> days remaining</div>
+  <div class="prog-row"><div class="prog-bar-outer"><div class="prog-bar-inner" id="bar-career" style="width:0%;background:#5b9cf6"></div></div><div class="prog-pct" id="pct-career">0%</div></div>
+  <div class="hero-stats"><div class="hs"><strong id="done-career">0</strong> done</div><div class="hs"><strong id="left-career">17</strong> remaining</div><div class="hs">Stack: <strong>Java · Spring Boot · MySQL</strong></div></div>
+  <div class="milestones-row" id="msr-career">
+    <div class="ms-card" data-pct="25" data-bg="rgba(91,156,246,.14)" data-border="rgba(91,156,246,.4)" data-txt="#5b9cf6"><div class="ms-period">By June</div><div class="ms-value">Spring Boot + 1 project</div><div class="ms-sub">Q2 milestone</div></div>
+    <div class="ms-card" data-pct="50" data-bg="rgba(91,156,246,.18)" data-border="rgba(91,156,246,.45)" data-txt="#5b9cf6"><div class="ms-period">By September</div><div class="ms-value">3 projects on GitHub</div><div class="ms-sub">Q3 milestone</div></div>
+    <div class="ms-card" data-pct="75" data-bg="rgba(91,156,246,.22)" data-border="rgba(91,156,246,.5)" data-txt="#5b9cf6"><div class="ms-period">October</div><div class="ms-value">Actively applying</div><div class="ms-sub">Q4 milestone</div></div>
+    <div class="ms-card" data-pct="100" data-bg="rgba(91,156,246,.28)" data-border="rgba(91,156,246,.6)" data-txt="#5b9cf6"><div class="ms-period">Nov–Dec</div><div class="ms-value">Internship secured!</div><div class="ms-sub">Final goal</div></div>
+  </div>
+  <div class="group"><div class="group-header"><div class="group-name">April — bridge to Spring Boot</div><div class="group-line"></div><div class="group-count" id="gc-c1"></div></div><div class="tasks">
+    <div class="task" id="c1" onclick="toggle('c1','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Revise Java OOP: inheritance, interfaces, generics, collections</div><div class="task-tag">Week 1 — quick refresh</div></div><button class="task-star" onclick="starTask(event,'c1','Revise Java OOP','career')">✦</button></div>
+    <div class="task" id="c2" onclick="toggle('c2','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Learn Spring Boot basics: @RestController, @Service, @Repository, DI</div><div class="task-tag">Week 2–3 — Amigoscode / Telusko on YouTube (free)</div></div><button class="task-star" onclick="starTask(event,'c2','Learn Spring Boot basics','career')">✦</button></div>
+    <div class="task" id="c3" onclick="toggle('c3','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Set up dev environment: IntelliJ IDEA Community, Maven, MySQL Workbench</div><div class="task-tag">Day 1</div></div><button class="task-star" onclick="starTask(event,'c3','Set up dev environment','career')">✦</button></div>
+    <div class="task" id="c4" onclick="toggle('c4','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Push everything to GitHub from day one — even small practice files count</div><div class="task-tag">Ongoing</div></div><button class="task-star" onclick="starTask(event,'c4','Push to GitHub daily','career')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">May — Project 1: CRUD REST API</div><div class="group-line"></div><div class="group-count" id="gc-c2"></div></div><div class="tasks">
+    <div class="task" id="c5" onclick="toggle('c5','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Build a CRUD REST API (Student/Employee/Library) with Spring Boot + MySQL</div><div class="task-tag">Week 1–2</div></div><button class="task-star" onclick="starTask(event,'c5','Build Project 1','career')">✦</button></div>
+    <div class="task" id="c6" onclick="toggle('c6','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Add Spring Data JPA with entity relationships: OneToMany, ManyToOne</div><div class="task-tag">Week 2–3</div></div><button class="task-star" onclick="starTask(event,'c6','Add JPA relationships','career')">✦</button></div>
+    <div class="task" id="c7" onclick="toggle('c7','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Add exception handling with @ControllerAdvice and custom error responses</div><div class="task-tag">Week 3</div></div><button class="task-star" onclick="starTask(event,'c7','Add exception handling','career')">✦</button></div>
+    <div class="task" id="c8" onclick="toggle('c8','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Deploy on Render.com (free tier) — get a live URL for your resume</div><div class="task-tag">Week 4</div></div><button class="task-star" onclick="starTask(event,'c8','Deploy Project 1 live','career')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">June — Project 2: Auth & Security</div><div class="group-line"></div><div class="group-count" id="gc-c3"></div></div><div class="tasks">
+    <div class="task" id="c9" onclick="toggle('c9','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Learn Spring Security + JWT authentication</div><div class="task-tag">Week 1–2</div></div><button class="task-star" onclick="starTask(event,'c9','Learn Spring Security + JWT','career')">✦</button></div>
+    <div class="task" id="c10" onclick="toggle('c10','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Build Project 2: user login/signup + role-based access (blog or task manager)</div><div class="task-tag">Week 2–4</div></div><button class="task-star" onclick="starTask(event,'c10','Build Project 2 with auth','career')">✦</button></div>
+    <div class="task" id="c11" onclick="toggle('c11','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Write a proper README: endpoints, setup instructions, tech stack</div><div class="task-tag">Week 4</div></div><button class="task-star" onclick="starTask(event,'c11','Write READMEs','career')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">July–August — Project 3 & DSA</div><div class="group-line"></div><div class="group-count" id="gc-c4"></div></div><div class="tasks">
+    <div class="task" id="c12" onclick="toggle('c12','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Build Project 3: Job tracker with email alerts (Spring Mail + Scheduler)</div><div class="task-tag">Jul–Aug</div></div><button class="task-star" onclick="starTask(event,'c12','Build Project 3','career')">✦</button></div>
+    <div class="task" id="c13" onclick="toggle('c13','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Start LeetCode in Java — 30 min/day, easy problems first</div><div class="task-tag">Jul onward</div></div><button class="task-star" onclick="starTask(event,'c13','Daily LeetCode practice','career')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">September–December — Apply & land it</div><div class="group-line"></div><div class="group-count" id="gc-c5"></div></div><div class="tasks">
+    <div class="task" id="c14" onclick="toggle('c14','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Write a one-page resume with all 3 projects front and centre</div><div class="task-tag">Sep week 1</div></div><button class="task-star" onclick="starTask(event,'c14','Write resume','career')">✦</button></div>
+    <div class="task" id="c15" onclick="toggle('c15','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Apply to 5+ Java backend internships/week — Internshala, LinkedIn, Wellfound</div><div class="task-tag">Sep–Dec</div></div><button class="task-star" onclick="starTask(event,'c15','Apply to internships weekly','career')">✦</button></div>
+    <div class="task" id="c16" onclick="toggle('c16','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Do 5+ mock interviews — OOP, collections, HashMap internals, String immutability</div><div class="task-tag">Oct–Nov</div></div><button class="task-star" onclick="starTask(event,'c16','Mock interview prep','career')">✦</button></div>
+    <div class="task" id="c17" onclick="toggle('c17','career')" style="--task-color:#5b9cf6"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Message Java developers on LinkedIn for referrals</div><div class="task-tag">Nov</div></div><button class="task-star" onclick="starTask(event,'c17','LinkedIn outreach','career')">✦</button></div>
+  </div></div>
+  <div class="notes-section"><div class="section-title">📝 Notes</div><textarea class="notes-textarea" id="notes-career" placeholder="Jot down thoughts, blockers, wins…"></textarea><div class="notes-save-row"><button class="save-btn" onclick="saveNotes('career')">Save notes</button></div></div>
+  <button class="danger-btn" onclick="resetGoal('career')">Reset career progress</button>
+</div>
+
+<!-- FINANCE PANEL -->
+<div class="panel" id="panel-finance">
+  <div class="panel-eyebrow">Goal 02 — Finance & Savings</div>
+  <div class="panel-title">Save<br>₹1,00,000 <span>this year</span></div>
+  <div class="countdown-chip"><span class="cc-dot" style="background:#4eca9a"></span><span id="cd-finance"></span> days remaining</div>
+  <div class="prog-row"><div class="prog-bar-outer"><div class="prog-bar-inner" id="bar-finance" style="width:0%;background:#4eca9a"></div></div><div class="prog-pct" id="pct-finance">0%</div></div>
+  <div class="hero-stats"><div class="hs"><strong id="done-finance">0</strong> done</div><div class="hs"><strong id="left-finance">11</strong> remaining</div><div class="hs">Monthly target: <strong>₹11,000</strong></div></div>
+  <div class="milestones-row" id="msr-finance">
+    <div class="ms-card" data-pct="25" data-bg="rgba(78,202,154,.12)" data-border="rgba(78,202,154,.4)" data-txt="#4eca9a"><div class="ms-period">June end</div><div class="ms-value">₹33,000</div><div class="ms-sub">3 months in</div></div>
+    <div class="ms-card" data-pct="50" data-bg="rgba(78,202,154,.16)" data-border="rgba(78,202,154,.45)" data-txt="#4eca9a"><div class="ms-period">August end</div><div class="ms-value">₹55,000</div><div class="ms-sub">Halfway+</div></div>
+    <div class="ms-card" data-pct="75" data-bg="rgba(78,202,154,.2)" data-border="rgba(78,202,154,.5)" data-txt="#4eca9a"><div class="ms-period">October end</div><div class="ms-value">₹77,000</div><div class="ms-sub">Almost there</div></div>
+    <div class="ms-card" data-pct="100" data-bg="rgba(78,202,154,.26)" data-border="rgba(78,202,154,.6)" data-txt="#4eca9a"><div class="ms-period">December</div><div class="ms-value">₹1,00,000</div><div class="ms-sub">Goal complete!</div></div>
+  </div>
+  <div class="group"><div class="group-header"><div class="group-name">Right now — setup</div><div class="group-line"></div><div class="group-count" id="gc-f1"></div></div><div class="tasks">
+    <div class="task" id="f1" onclick="toggle('f1','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Open a separate savings account exclusively for this goal</div><div class="task-tag">This week</div></div><button class="task-star" onclick="starTask(event,'f1','Open savings account','finance')">✦</button></div>
+    <div class="task" id="f2" onclick="toggle('f2','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Set up auto-transfer of ₹11,000 on the day you receive income</div><div class="task-tag">This week</div></div><button class="task-star" onclick="starTask(event,'f2','Set up ₹11K auto-transfer','finance')">✦</button></div>
+    <div class="task" id="f3" onclick="toggle('f3','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Install a free expense tracker app — Walnut or Money Manager</div><div class="task-tag">Day 1</div></div><button class="task-star" onclick="starTask(event,'f3','Install expense tracker','finance')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">April — audit your spending</div><div class="group-line"></div><div class="group-count" id="gc-f2"></div></div><div class="tasks">
+    <div class="task" id="f4" onclick="toggle('f4','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">List every subscription — cancel anything unused in the last 30 days</div><div class="task-tag">Week 1</div></div><button class="task-star" onclick="starTask(event,'f4','Audit subscriptions','finance')">✦</button></div>
+    <div class="task" id="f5" onclick="toggle('f5','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Set a weekly food delivery budget — max 2 orders per week</div><div class="task-tag">April</div></div><button class="task-star" onclick="starTask(event,'f5','Cap food delivery 2x/week','finance')">✦</button></div>
+    <div class="task" id="f6" onclick="toggle('f6','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Identify your #1 spending leak and cut it by 50%</div><div class="task-tag">April</div></div><button class="task-star" onclick="starTask(event,'f6','Cut spending leak 50%','finance')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">Monthly habits</div><div class="group-line"></div><div class="group-count" id="gc-f3"></div></div><div class="tasks">
+    <div class="task" id="f7" onclick="toggle('f7','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Do a 10-minute money review every month-end</div><div class="task-tag">Monthly</div></div><button class="task-star" onclick="starTask(event,'f7','Monthly money review','finance')">✦</button></div>
+    <div class="task" id="f8" onclick="toggle('f8','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">If savings exceed ₹11K, invest the surplus in a liquid mutual fund</div><div class="task-tag">Monthly</div></div><button class="task-star" onclick="starTask(event,'f8','Invest surplus in liquid fund','finance')">✦</button></div>
+    <div class="task" id="f9" onclick="toggle('f9','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Celebrate every ₹25,000 milestone — treat yourself to one nice meal</div><div class="task-tag">Each milestone</div></div><button class="task-star" onclick="starTask(event,'f9','Celebrate ₹25K milestones','finance')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">Booster — earn more</div><div class="group-line"></div><div class="group-count" id="gc-f4"></div></div><div class="tasks">
+    <div class="task" id="f10" onclick="toggle('f10','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">List skills you can freelance (tutoring, coding) — try one gig this quarter</div><div class="task-tag">Q3</div></div><button class="task-star" onclick="starTask(event,'f10','Try one freelance gig','finance')">✦</button></div>
+    <div class="task" id="f11" onclick="toggle('f11','finance')" style="--task-color:#4eca9a"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">All extra income (gifts, cashback, freelance) goes 100% to savings</div><div class="task-tag">Ongoing</div></div><button class="task-star" onclick="starTask(event,'f11','Route all extra income to savings','finance')">✦</button></div>
+  </div></div>
+  <div class="notes-section"><div class="section-title">📝 Notes</div><textarea class="notes-textarea" id="notes-finance" placeholder="Track monthly savings, wins, setbacks…"></textarea><div class="notes-save-row"><button class="save-btn" onclick="saveNotes('finance')">Save notes</button></div></div>
+  <button class="danger-btn" onclick="resetGoal('finance')">Reset finance progress</button>
+</div>
+
+<!-- HEALTH PANEL -->
+<div class="panel" id="panel-health">
+  <div class="panel-eyebrow">Goal 03 — Health & Fitness</div>
+  <div class="panel-title">Lose<br>10 kilograms <span>by December</span></div>
+  <div class="countdown-chip"><span class="cc-dot" style="background:#f07850"></span><span id="cd-health"></span> days remaining</div>
+  <div class="prog-row"><div class="prog-bar-outer"><div class="prog-bar-inner" id="bar-health" style="width:0%;background:#f07850"></div></div><div class="prog-pct" id="pct-health">0%</div></div>
+  <div class="hero-stats"><div class="hs"><strong id="done-health">0</strong> done</div><div class="hs"><strong id="left-health">11</strong> remaining</div><div class="hs">Pace: <strong>~1.1 kg/month</strong></div></div>
+  <div class="milestones-row" id="msr-health">
+    <div class="ms-card" data-pct="25" data-bg="rgba(240,120,80,.12)" data-border="rgba(240,120,80,.4)" data-txt="#f07850"><div class="ms-period">June end</div><div class="ms-value">– 3 kg</div><div class="ms-sub">3 months in</div></div>
+    <div class="ms-card" data-pct="50" data-bg="rgba(240,120,80,.16)" data-border="rgba(240,120,80,.45)" data-txt="#f07850"><div class="ms-period">August end</div><div class="ms-value">– 5.5 kg</div><div class="ms-sub">Halfway</div></div>
+    <div class="ms-card" data-pct="75" data-bg="rgba(240,120,80,.2)" data-border="rgba(240,120,80,.5)" data-txt="#f07850"><div class="ms-period">October end</div><div class="ms-value">– 8 kg</div><div class="ms-sub">Stretch goal</div></div>
+    <div class="ms-card" data-pct="100" data-bg="rgba(240,120,80,.26)" data-border="rgba(240,120,80,.6)" data-txt="#f07850"><div class="ms-period">December</div><div class="ms-value">– 10 kg</div><div class="ms-sub">Goal complete!</div></div>
+  </div>
+  <div class="group"><div class="group-header"><div class="group-name">This week — baseline</div><div class="group-line"></div><div class="group-count" id="gc-h1"></div></div><div class="tasks">
+    <div class="task" id="h1" onclick="toggle('h1','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Weigh yourself and take a starting photo — your benchmark</div><div class="task-tag">Day 1</div></div><button class="task-star" onclick="starTask(event,'h1','Take starting weight + photo','health')">✦</button></div>
+    <div class="task" id="h2" onclick="toggle('h2','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Pick a weekly weigh-in day — every Sunday morning, same conditions</div><div class="task-tag">Day 1</div></div><button class="task-star" onclick="starTask(event,'h2','Set weekly weigh-in day','health')">✦</button></div>
+    <div class="task" id="h3" onclick="toggle('h3','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Estimate daily calories with HealthifyMe or MyFitnessPal (free)</div><div class="task-tag">Week 1</div></div><button class="task-star" onclick="starTask(event,'h3','Set up calorie tracking','health')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">Daily habits</div><div class="group-line"></div><div class="group-count" id="gc-h2"></div></div><div class="tasks">
+    <div class="task" id="h4" onclick="toggle('h4','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Eat at a ~500 calorie deficit — cut sugary drinks, reduce portions slightly</div><div class="task-tag">Daily</div></div><button class="task-star" onclick="starTask(event,'h4','Maintain 500 cal deficit','health')">✦</button></div>
+    <div class="task" id="h5" onclick="toggle('h5','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Drink 2.5–3 litres of water daily</div><div class="task-tag">Daily</div></div><button class="task-star" onclick="starTask(event,'h5','Drink 3L water daily','health')">✦</button></div>
+    <div class="task" id="h6" onclick="toggle('h6','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Sleep 7–8 hours — poor sleep raises hunger hormones and stalls fat loss</div><div class="task-tag">Daily</div></div><button class="task-star" onclick="starTask(event,'h6','Sleep 7–8 hours','health')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">Exercise — 4x per week</div><div class="group-line"></div><div class="group-count" id="gc-h3"></div></div><div class="tasks">
+    <div class="task" id="h7" onclick="toggle('h7','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Weeks 1–4: 30 min brisk walk or basic home workout</div><div class="task-tag">April</div></div><button class="task-star" onclick="starTask(event,'h7','30 min daily workout','health')">✦</button></div>
+    <div class="task" id="h8" onclick="toggle('h8','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Month 2 onward: add strength training 2x/week to preserve muscle</div><div class="task-tag">May+</div></div><button class="task-star" onclick="starTask(event,'h8','Add 2x strength training/week','health')">✦</button></div>
+    <div class="task" id="h9" onclick="toggle('h9','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Track every workout in a notes app — the streak keeps you going</div><div class="task-tag">Ongoing</div></div><button class="task-star" onclick="starTask(event,'h9','Track all workouts','health')">✦</button></div>
+  </div></div>
+  <div class="group"><div class="group-header"><div class="group-name">Monthly reviews</div><div class="group-line"></div><div class="group-count" id="gc-h4"></div></div><div class="tasks">
+    <div class="task" id="h10" onclick="toggle('h10','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Review weight trend at month-end — adjust if stalled 2+ weeks</div><div class="task-tag">Monthly</div></div><button class="task-star" onclick="starTask(event,'h10','Monthly weight review','health')">✦</button></div>
+    <div class="task" id="h11" onclick="toggle('h11','health')" style="--task-color:#f07850"><div class="cb"><span class="ck">✓</span></div><div class="task-body"><div class="task-text">Take progress photos every 4 weeks — the scale lies sometimes, photos don't</div><div class="task-tag">Monthly</div></div><button class="task-star" onclick="starTask(event,'h11','Monthly progress photos','health')">✦</button></div>
+  </div></div>
+  <div class="notes-section"><div class="section-title">📝 Notes</div><textarea class="notes-textarea" id="notes-health" placeholder="Log weekly weight, workouts, energy…"></textarea><div class="notes-save-row"><button class="save-btn" onclick="saveNotes('health')">Save notes</button></div></div>
+  <button class="danger-btn" onclick="resetGoal('health')">Reset health progress</button>
+</div>
+
+</main>
+<div class="confetti-wrap" id="confetti-wrap"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ═══════════════════════════════ STATE ═══════════════════════════
+const SK='goals2026v3';
+const GOALS_CFG={
+  career:{total:17,color:'#5b9cf6',groups:{'gc-c1':['c1','c2','c3','c4'],'gc-c2':['c5','c6','c7','c8'],'gc-c3':['c9','c10','c11'],'gc-c4':['c12','c13'],'gc-c5':['c14','c15','c16','c17']}},
+  finance:{total:11,color:'#4eca9a',groups:{'gc-f1':['f1','f2','f3'],'gc-f2':['f4','f5','f6'],'gc-f3':['f7','f8','f9'],'gc-f4':['f10','f11']}},
+  health:{total:11,color:'#f07850',groups:{'gc-h1':['h1','h2','h3'],'gc-h2':['h4','h5','h6'],'gc-h3':['h7','h8','h9'],'gc-h4':['h10','h11']}}
+};
+const HABITS=[
+  {id:'h_code',name:'Code for 1+ hour',color:'#5b9cf6'},
+  {id:'h_save',name:'No impulse spending',color:'#4eca9a'},
+  {id:'h_exercise',name:'Exercise / walk',color:'#f07850'},
+  {id:'h_water',name:'Drink 3L water',color:'#4eca9a'},
+  {id:'h_sleep',name:'Sleep 7+ hours',color:'#f07850'},
+  {id:'h_leet',name:'LeetCode practice',color:'#5b9cf6'},
+];
+const QUOTES=[
+  {text:"The secret of getting ahead is getting started.",author:"Mark Twain"},
+  {text:"It does not matter how slowly you go as long as you do not stop.",author:"Confucius"},
+  {text:"You don't have to be great to start, but you have to start to be great.",author:"Zig Ziglar"},
+  {text:"Success is the sum of small efforts, repeated day in and day out.",author:"Robert Collier"},
+  {text:"Hard work beats talent when talent doesn't work hard.",author:"Tim Notke"},
+  {text:"The best time to plant a tree was 20 years ago. The second best time is now.",author:"Chinese Proverb"},
+  {text:"Don't watch the clock; do what it does. Keep going.",author:"Sam Levenson"},
+  {text:"Discipline is the bridge between goals and accomplishment.",author:"Jim Rohn"},
+  {text:"A year from now you may wish you had started today.",author:"Karen Lamb"},
+  {text:"Opportunities don't happen, you create them.",author:"Chris Grosser"},
+];
+let S={};
+let quoteIdx=0;
+let pomoInterval=null,pomoRunning=false,pomoIsBreak=false,pomoSecondsLeft=25*60,pomoTotalSeconds=25*60,pomoSessionCount=1;
+
+// ═══════════════════════════════ GPS ═══════════════════════════
+let gpsMap=null,gpsWatchId=null,gpsRunning=false,gpsPaused=false;
+let gpsPoints=[],gpsPolyline=null,gpsMarker=null,gpsStartTime=null,gpsPausedMs=0,gpsPauseStart=null;
+let gpsTimerInterval=null,darkTiles=true;
+let gpsCurrentSession={dist:0,seconds:0,calories:0};
+
+const TILE_DARK='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const TILE_LIGHT='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+let currentTileLayer=null;
+
+function initMap(){
+  if(gpsMap) return;
+  gpsMap=L.map('gps-map',{zoomControl:true,attributionControl:false}).setView([12.9716,77.5946],15);
+  currentTileLayer=L.tileLayer(TILE_DARK,{maxZoom:19}).addTo(gpsMap);
+  setTimeout(()=>gpsMap.invalidateSize(),300);
+}
+
+function gpsStart(){
+  if(!navigator.geolocation){showToast('GPS not supported in this browser');return;}
+  if(gpsRunning) return;
+  initMap();
+  gpsRunning=true;gpsPaused=false;
+  gpsPoints=[];gpsCurrentSession={dist:0,seconds:0,calories:0};
+  gpsStartTime=Date.now();gpsPausedMs=0;
+  if(gpsPolyline){gpsMap.removeLayer(gpsPolyline);gpsPolyline=null;}
+
+  document.getElementById('gps-start-btn').style.display='none';
+  document.getElementById('gps-pause-btn').style.display='';
+  document.getElementById('gps-stop-btn').style.display='';
+  document.getElementById('activity-type').disabled=true;
+  setGpsStatus('active','Tracking…');
+
+  gpsPolyline=L.polyline([],{color:'#a78bfa',weight:4,opacity:.9}).addTo(gpsMap);
+
+  gpsWatchId=navigator.geolocation.watchPosition(
+    pos=>{
+      if(gpsPaused) return;
+      const {latitude:lat,longitude:lng,accuracy}=pos.coords;
+      const pt={lat,lng,t:Date.now()};
+      if(gpsPoints.length>0){
+        const prev=gpsPoints[gpsPoints.length-1];
+        const d=haversine(prev.lat,prev.lng,lat,lng);
+        if(d>0.003 && accuracy<40) gpsCurrentSession.dist+=d;
+      }
+      gpsPoints.push(pt);
+      gpsPolyline.addLatLng([lat,lng]);
+      if(!gpsMarker){
+        gpsMarker=L.circleMarker([lat,lng],{radius:8,fillColor:'#a78bfa',color:'#fff',weight:2,fillOpacity:1}).addTo(gpsMap);
+      } else {
+        gpsMarker.setLatLng([lat,lng]);
+      }
+      gpsMap.panTo([lat,lng],{animate:true,duration:.5});
+      updateGpsStats();
+    },
+    err=>{
+      if(err.code===1) showToast('Please allow location access and reload');
+      else showToast('GPS error: '+err.message);
+    },
+    {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
+  );
+
+  gpsTimerInterval=setInterval(()=>{
+    if(!gpsPaused) updateGpsStats();
+  },1000);
+}
+
+function gpsPause(){
+  if(!gpsRunning) return;
+  gpsPaused=!gpsPaused;
+  if(gpsPaused){
+    gpsPauseStart=Date.now();
+    document.getElementById('gps-pause-btn').textContent='Resume';
+    setGpsStatus('paused','Paused');
+  } else {
+    if(gpsPauseStart) gpsPausedMs+=Date.now()-gpsPauseStart;
+    document.getElementById('gps-pause-btn').textContent='Pause';
+    setGpsStatus('active','Tracking…');
+  }
+}
+
+function gpsStop(){
+  if(!gpsRunning) return;
+  clearInterval(gpsTimerInterval);
+  if(gpsWatchId!=null){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}
+  gpsRunning=false;gpsPaused=false;
+  document.getElementById('gps-start-btn').style.display='';
+  document.getElementById('gps-pause-btn').style.display='none';
+  document.getElementById('gps-stop-btn').style.display='none';
+  document.getElementById('gps-pause-btn').textContent='Pause';
+  document.getElementById('activity-type').disabled=false;
+  setGpsStatus('','Ready');
+
+  const elapsed=Math.floor((Date.now()-gpsStartTime-gpsPausedMs)/1000);
+  const dist=parseFloat(gpsCurrentSession.dist.toFixed(2));
+  if(dist>0.01 || elapsed>30){
+    const actType=document.getElementById('activity-type').value;
+    const cal=calcCalories(dist,actType);
+    const session={
+      id:Date.now(),date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}),
+      time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+      activity:actType,dist:dist,seconds:elapsed,calories:cal,
+      points:gpsPoints.slice(0,500)
+    };
+    if(!S.gpsSessions) S.gpsSessions=[];
+    S.gpsSessions.unshift(session);
+    if(S.gpsSessions.length>50) S.gpsSessions.pop();
+    save();
+    renderSessionsList();
+    updateGpsTotals();
+    updateDashboardGps();
+    showToast('Session saved! '+dist+' km in '+fmtTime(elapsed));
+    celebrate();
+  } else {
+    showToast('Session too short — not saved');
+  }
+  gpsPoints=[];gpsCurrentSession={dist:0,seconds:0,calories:0};
+  document.getElementById('g-dist').textContent='0.00';
+  document.getElementById('g-time').textContent='00:00';
+  document.getElementById('g-pace').textContent='—';
+  document.getElementById('g-speed').textContent='0.0';
+  document.getElementById('g-cal').textContent='0';
+}
+
+function updateGpsStats(){
+  if(!gpsStartTime) return;
+  const elapsed=Math.floor((Date.now()-gpsStartTime-gpsPausedMs)/1000);
+  const dist=gpsCurrentSession.dist;
+  const actType=document.getElementById('activity-type').value;
+  document.getElementById('g-dist').textContent=dist.toFixed(2);
+  document.getElementById('g-time').textContent=fmtTime(elapsed);
+  document.getElementById('g-cal').textContent=Math.round(calcCalories(dist,actType));
+  if(elapsed>10 && dist>0.01){
+    const speedKmh=(dist/(elapsed/3600));
+    document.getElementById('g-speed').textContent=speedKmh.toFixed(1);
+    const paceSecPerKm=elapsed/dist;
+    const pm=Math.floor(paceSecPerKm/60),ps=Math.round(paceSecPerKm%60);
+    document.getElementById('g-pace').textContent=pm+"'"+ps.toString().padStart(2,'0')+'"';
+  }
+}
+
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function calcCalories(km,type){
+  const met={walk:3.8,run:9.8,cycle:6.8,hike:6.0};
+  const weight=65,speed={walk:5,run:10,cycle:18,hike:4};
+  const hours=km/(speed[type]||5);
+  return Math.round((met[type]||4)*weight*hours);
+}
+
+function fmtTime(sec){
+  const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+  if(h>0) return h+':'+m.toString().padStart(2,'0');
+  return m.toString().padStart(2,'0')+':'+s.toString().padStart(2,'0');
+}
+
+function centerMap(){
+  if(!gpsMap) return;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    gpsMap.setView([pos.coords.latitude,pos.coords.longitude],16,{animate:true});
+  },()=>showToast('Could not get location'));
+}
+
+function toggleMapStyle(){
+  if(!gpsMap) return;
+  darkTiles=!darkTiles;
+  if(currentTileLayer) gpsMap.removeLayer(currentTileLayer);
+  currentTileLayer=L.tileLayer(darkTiles?TILE_DARK:TILE_LIGHT,{maxZoom:19}).addTo(gpsMap);
+}
+
+function setGpsStatus(type,text){
+  const dot=document.getElementById('status-dot');
+  dot.className='status-dot'+(type?' '+type:'');
+  document.getElementById('status-text').textContent=text;
+}
+
+function renderSessionsList(){
+  const list=document.getElementById('sessions-list');
+  if(!S.gpsSessions||S.gpsSessions.length===0){
+    list.innerHTML='<div class="history-empty">No sessions yet. Hit Start to begin tracking.</div>';
+    return;
+  }
+  const actEmoji={walk:'🚶',run:'🏃',cycle:'🚴',hike:'🥾'};
+  list.innerHTML=S.gpsSessions.map(s=>`
+    <div class="session-card">
+      <div class="sc-top">
+        <span style="font-size:16px">${actEmoji[s.activity]||'🏃'}</span>
+        <span class="sc-activity">${s.activity.charAt(0).toUpperCase()+s.activity.slice(1)}</span>
+        <span class="sc-date">${s.date} · ${s.time}</span>
+      </div>
+      <div class="sc-stats">
+        <div class="sc-stat"><strong>${s.dist} km</strong> distance</div>
+        <div class="sc-stat"><strong>${fmtTime(s.seconds)}</strong> duration</div>
+        <div class="sc-stat"><strong>${s.calories} kcal</strong> burned</div>
+        <div class="sc-stat"><strong>${s.seconds>0&&s.dist>0?((s.dist/(s.seconds/3600)).toFixed(1)):'—'} km/h</strong> avg speed</div>
+      </div>
+    </div>`).join('');
+}
+
+function updateGpsTotals(){
+  if(!S.gpsSessions||S.gpsSessions.length===0) return;
+  const totalDist=S.gpsSessions.reduce((a,s)=>a+s.dist,0);
+  const totalSec=S.gpsSessions.reduce((a,s)=>a+s.seconds,0);
+  const totalCal=S.gpsSessions.reduce((a,s)=>a+s.calories,0);
+  const best=Math.max(...S.gpsSessions.map(s=>s.dist));
+  document.getElementById('tot-dist').textContent=totalDist.toFixed(2);
+  const h=Math.floor(totalSec/3600),m=Math.floor((totalSec%3600)/60);
+  document.getElementById('tot-time').textContent=h+'h '+m+'m';
+  document.getElementById('tot-sessions').textContent=S.gpsSessions.length;
+  document.getElementById('avg-dist').textContent=(totalDist/S.gpsSessions.length).toFixed(2);
+  document.getElementById('best-dist').textContent=best.toFixed(2);
+  document.getElementById('tot-cal').textContent=totalCal;
+}
+
+function updateDashboardGps(){
+  if(!S.gpsSessions) return;
+  const totalDist=S.gpsSessions.reduce((a,s)=>a+s.dist,0);
+  document.getElementById('kpi-km').textContent=totalDist.toFixed(1);
+  document.getElementById('kpi-workouts').textContent=S.gpsSessions.length;
+}
+
+function gpsTabSwitch(tab,btn){
+  document.querySelectorAll('.gps-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('gps-tab-history').style.display=tab==='history'?'':'none';
+  document.getElementById('gps-tab-stats').style.display=tab==='stats'?'':'none';
+  if(tab==='stats') updateGpsTotals();
+}
+
+// ═══════════════════════════════ TASKS ═══════════════════════════
+function load(){
+  try{S=JSON.parse(localStorage.getItem(SK))||{};}catch(e){S={};}
+  if(!S.checked)S.checked={};
+  if(!S.starred)S.starred={};
+  if(!S.notes)S.notes={};
+  if(!S.habits)S.habits={};
+  if(!S.pomos)S.pomos=0;
+  if(!S.pomoLog)S.pomoLog=[];
+  if(!S.streak)S.streak={count:0,lastDate:''};
+  if(!S.gpsSessions)S.gpsSessions=[];
+  updateStreak();
+  renderAll();
+  initDashboard();
+  buildHabitGrid();
+  loadNotes();
+  setCountdowns();
+  renderPomoLog();
+  renderSessionsList();
+  updateGpsTotals();
+  updateDashboardGps();
+}
+function save(){localStorage.setItem(SK,JSON.stringify(S));}
+
+function updateStreak(){
+  const today=new Date().toISOString().slice(0,10);
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(S.streak.lastDate===today){}
+  else if(S.streak.lastDate===yesterday){S.streak.count++;S.streak.lastDate=today;}
+  else{S.streak.count=1;S.streak.lastDate=today;}
+  document.getElementById('streak-count').textContent=S.streak.count;
+  save();
+}
+
+function toggle(id,goal){
+  S.checked[id]=!S.checked[id];
+  document.getElementById(id).classList.toggle('done',!!S.checked[id]);
+  updateProgress(goal);save();
+}
+
+function starTask(e,id,label,goal){
+  e.stopPropagation();
+  S.starred[id]=!S.starred[id];
+  document.getElementById(id).classList.toggle('starred-task',!!S.starred[id]);
+  renderFocusList();save();
+  showToast(S.starred[id]?'⭐ Added to today\'s focus':'Removed from focus');
+}
+
+function renderAll(){
+  Object.keys(S.checked).forEach(id=>{const el=document.getElementById(id);if(el&&S.checked[id])el.classList.add('done');});
+  Object.keys(S.starred).forEach(id=>{const el=document.getElementById(id);if(el&&S.starred[id])el.classList.add('starred-task');});
+  ['career','finance','health'].forEach(g=>updateProgress(g));
+}
+
+function updateProgress(goal){
+  const cfg=GOALS_CFG[goal];
+  const done=Object.keys(S.checked).filter(k=>S.checked[k]&&k.startsWith(goal[0])).length;
+  const pct=Math.round(done/cfg.total*100);
+  ['bar-','pct-','np-','dash-pct-','dash-bar-'].forEach(pfx=>{
+    const el=document.getElementById(pfx+goal);if(!el)return;
+    if(pfx==='pct-'||pfx==='np-'||pfx==='dash-pct-')el.textContent=pct+'%';
+    else{el.style.width=pct+'%';if(pfx==='dash-bar-')el.style.background=cfg.color;}
+  });
+  const dEl=document.getElementById('done-'+goal),lEl=document.getElementById('left-'+goal);
+  if(dEl)dEl.textContent=done;if(lEl)lEl.textContent=cfg.total-done;
+  const dsEl=document.getElementById('dash-stat-'+goal);if(dsEl)dsEl.textContent=done+' of '+cfg.total+' done';
+  Object.entries(cfg.groups).forEach(([gcId,ids])=>{
+    const d=ids.filter(id=>S.checked[id]).length;
+    const el=document.getElementById(gcId);if(el)el.textContent=d+'/'+ids.length;
+  });
+  document.querySelectorAll('#msr-'+goal+' .ms-card').forEach(card=>{
+    const reached=pct>=parseInt(card.dataset.pct);
+    card.classList.toggle('reached',reached);
+    card.style.background=reached?card.dataset.bg:'';
+    card.style.borderColor=reached?card.dataset.border:'';
+    card.querySelector('.ms-value').style.color=reached?card.dataset.txt:'';
+  });
+  if(pct===100)celebrate();
+  const totalDone=Object.values(S.checked).filter(Boolean).length;
+  const op=Math.round(totalDone/39*100);
+  document.getElementById('overall-fill').style.width=op+'%';
+  document.getElementById('overall-label').textContent=totalDone+' / 39 tasks';
+  document.getElementById('kpi-done').textContent=totalDone;
+}
+
+function initDashboard(){
+  const now=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dash-date').textContent=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+  const h=now.getHours();
+  document.getElementById('dash-hello').textContent=h<12?'Good morning 👋':h<17?'Good afternoon 👋':'Good evening 👋';
+  quoteIdx=Math.floor(Math.random()*QUOTES.length);renderQuote();renderFocusList();
+}
+function renderQuote(){const q=QUOTES[quoteIdx];document.getElementById('quote-text').textContent='"'+q.text+'"';document.getElementById('quote-author').textContent='— '+q.author;}
+function nextQuote(){quoteIdx=(quoteIdx+1)%QUOTES.length;renderQuote();}
+
+function renderFocusList(){
+  const container=document.getElementById('focus-list-dash');
+  const starred=Object.keys(S.starred).filter(id=>S.starred[id]);
+  if(!starred.length){container.innerHTML='<div style="font-size:13px;color:var(--text3);padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);">Star any task (✦) to pin it here.</div>';return;}
+  const gmap={c:'career',f:'finance',h:'health'};
+  const gcolor={career:'#5b9cf6',finance:'#4eca9a',health:'#f07850'};
+  const labels={};document.querySelectorAll('.task').forEach(t=>{const l=t.querySelector('.task-text');if(l)labels[t.id]=l.textContent;});
+  container.innerHTML=starred.map(id=>{
+    const goal=gmap[id[0]]||'career',color=gcolor[goal],done=S.checked[id]?'done':'',label=labels[id]||id;
+    return `<div class="focus-task-item ${done}" onclick="nav('${goal}')"><span style="font-size:14px;color:var(--yellow)">⭐</span><span class="fti-text" style="${done?'text-decoration:line-through;opacity:.5':''}">${label}</span><span class="fti-goal" style="color:${color}">${goal}</span></div>`;
+  }).join('');
+}
+
+function setCountdowns(){
+  const diff=Math.ceil((new Date('2026-12-31')-new Date())/86400000);
+  ['career','finance','health'].forEach(g=>{const el=document.getElementById('cd-'+g);if(el)el.textContent=diff;});
+  document.getElementById('kpi-days').textContent=diff;
+}
+
+function buildHabitGrid(){
+  const days=['M','T','W','T','F','S','S'],week=getWeekKey();
+  document.getElementById('habit-grid').innerHTML=HABITS.map(h=>{
+    const btns=days.map((d,i)=>{
+      const key=week+'_'+h.id+'_'+i,done=S.habits[key]?'done':'';
+      return `<div class="habit-day ${done}" style="--day-color:${h.color}" onclick="toggleHabit('${key}',this)">${d}</div>`;
+    }).join('');
+    return `<div class="habit-row"><div class="habit-name">${h.name}</div><div class="habit-days">${btns}</div></div>`;
+  }).join('');
+}
+function getWeekKey(){const d=new Date(),j=new Date(d.getFullYear(),0,1),w=Math.ceil(((d-j)/86400000+j.getDay()+1)/7);return d.getFullYear()+'W'+w;}
+function toggleHabit(key,el){S.habits[key]=!S.habits[key];el.classList.toggle('done',!!S.habits[key]);save();}
+
+function saveNotes(goal){S.notes[goal]=document.getElementById('notes-'+goal).value;save();showToast('Notes saved ✓');}
+function loadNotes(){['career','finance','health'].forEach(g=>{const el=document.getElementById('notes-'+g);if(el&&S.notes[g])el.value=S.notes[g];});}
+
+// ═══════════════════════════════ POMODORO ═══════════════════════
+function pomoToggle(){
+  if(pomoRunning){clearInterval(pomoInterval);pomoRunning=false;document.getElementById('pomo-start-btn').textContent='Resume';}
+  else{pomoRunning=true;document.getElementById('pomo-start-btn').textContent='Pause';pomoInterval=setInterval(pomoTick,1000);}
+}
+function pomoTick(){
+  pomoSecondsLeft--;
+  if(pomoSecondsLeft<=0){
+    clearInterval(pomoInterval);pomoRunning=false;
+    if(!pomoIsBreak){
+      S.pomos=(S.pomos||0)+1;
+      const now=new Date(),t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+      S.pomoLog.unshift({time:t,session:pomoSessionCount});if(S.pomoLog.length>20)S.pomoLog.pop();
+      renderPomoLog();save();pomoSessionCount++;
+      pomoIsBreak=true;const bm=parseInt(document.getElementById('pomo-break-input').value)||5;
+      pomoSecondsLeft=bm*60;pomoTotalSeconds=bm*60;
+      document.getElementById('pomo-mode-label').textContent='BREAK TIME ☕';
+      document.getElementById('pomo-display').classList.add('break-mode');
+      document.getElementById('pomo-ring-fill').style.stroke='#4eca9a';
+      showToast('🎉 Session done! Take a break.');
+    } else {
+      pomoIsBreak=false;const wm=parseInt(document.getElementById('pomo-work-input').value)||25;
+      pomoSecondsLeft=wm*60;pomoTotalSeconds=wm*60;
+      document.getElementById('pomo-mode-label').textContent='WORK SESSION';
+      document.getElementById('pomo-display').classList.remove('break-mode');
+      document.getElementById('pomo-ring-fill').style.stroke='#5b9cf6';
+      showToast('💪 Break over. Back to work!');
+    }
+    document.getElementById('pomo-start-btn').textContent='Start';
+    document.getElementById('pomo-session-num').textContent=pomoSessionCount;
+  }
+  updatePomoDisplay();
+}
+function pomoReset(){
+  clearInterval(pomoInterval);pomoRunning=false;pomoIsBreak=false;
+  const wm=parseInt(document.getElementById('pomo-work-input').value)||25;
+  pomoSecondsLeft=wm*60;pomoTotalSeconds=wm*60;
+  document.getElementById('pomo-start-btn').textContent='Start';
+  document.getElementById('pomo-mode-label').textContent='WORK SESSION';
+  document.getElementById('pomo-display').classList.remove('break-mode');
+  document.getElementById('pomo-ring-fill').style.stroke='#5b9cf6';
+  updatePomoDisplay();
+}
+function pomoSkip(){pomoSecondsLeft=1;if(!pomoRunning)pomoToggle();}
+function updatePomoDisplay(){
+  const m=Math.floor(pomoSecondsLeft/60),s=pomoSecondsLeft%60;
+  document.getElementById('pomo-display').textContent=m.toString().padStart(2,'0')+':'+s.toString().padStart(2,'0');
+  const c=2*Math.PI*84,p=pomoSecondsLeft/pomoTotalSeconds;
+  document.getElementById('pomo-ring-fill').style.strokeDasharray=c;
+  document.getElementById('pomo-ring-fill').style.strokeDashoffset=c*(1-p);
+}
+function renderPomoLog(){
+  const list=document.getElementById('pomo-log-list');
+  if(!S.pomoLog||!S.pomoLog.length){list.innerHTML='<div class="pomo-log-empty">No sessions yet.</div>';return;}
+  list.innerHTML=S.pomoLog.slice(0,10).map(item=>`<div class="pomo-log-item"><span class="pl-time">${item.time}</span><span>Session ${item.session} complete</span></div>`).join('');
+}
+
+// ═══════════════════════════════ NAV ═══════════════════════════
+function nav(page){
+  document.querySelectorAll('.panel,.pomo-panel,.gps-panel').forEach(p=>p.classList.remove('active'));
+  const target=document.getElementById('panel-'+page);if(target)target.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',['dashboard','gps','pomodoro','career','finance','health'][i]===page));
+  document.querySelector('.main').scrollTop=0;
+  if(page==='gps'){setTimeout(()=>{initMap();if(gpsMap)gpsMap.invalidateSize();},100);}
+  if(page==='dashboard'){buildHabitGrid();renderFocusList();}
+}
+
+function resetGoal(goal){
+  if(!confirm('Reset all '+goal+' progress?'))return;
+  Object.keys(S.checked).forEach(k=>{if(k.startsWith(goal[0]))S.checked[k]=false;});
+  document.querySelectorAll('#panel-'+goal+' .task').forEach(t=>t.classList.remove('done'));
+  updateProgress(goal);save();
+}
+
+function celebrate(){
+  const wrap=document.getElementById('confetti-wrap');wrap.innerHTML='';
+  ['#5b9cf6','#4eca9a','#f07850','#edeae4','#f5c842'].forEach(c=>{
+    for(let i=0;i<12;i++){
+      const el=document.createElement('div');el.className='confetto';
+      el.style.cssText=`left:${Math.random()*100}%;background:${c};animation-duration:${1.2+Math.random()*1.5}s;animation-delay:${Math.random()*.6}s;width:${5+Math.random()*7}px;height:${5+Math.random()*7}px;border-radius:${Math.random()>.5?'50%':'2px'}`;
+      wrap.appendChild(el);
+    }
+  });
+  setTimeout(()=>wrap.innerHTML='',3500);
+}
+
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+updatePomoDisplay();
+load();
+</script>
+</body>
+</html>
